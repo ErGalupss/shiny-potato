@@ -1,0 +1,110 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  firstName String?
+  lastName  String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  roles     UserRole[]
+  auditLogs AuditLog[]
+}
+
+model Role {
+  id          String   @id @default(uuid())
+  name        String   @unique // e.g., "admin", "user", "manager"
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users       UserRole[]
+  permissions RolePermission[]
+  featureFlags RoleFeatureFlag[]
+}
+
+model UserRole {
+  userId String
+  roleId String
+
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role   Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+}
+
+model Permission {
+  id          String   @id @default(uuid())
+  key         String   @unique // e.g., "roles.read", "users.create"
+  action      String   // e.g., "create", "read", "update", "delete", "manage"
+  subject     String   // e.g., "User", "Role", "FeatureFlag", "all"
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  roles       RolePermission[]
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+}
+
+model FeatureFlag {
+  id          String   @id @default(uuid())
+  key         String   @unique // e.g., "new_dashboard", "beta_feature"
+  name        String
+  description String?
+  isEnabled   Boolean  @default(false) // Global scope
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  roles       RoleFeatureFlag[]
+}
+
+model RoleFeatureFlag {
+  roleId        String
+  featureFlagId String
+  isEnabled     Boolean @default(false)
+
+  role        Role        @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  featureFlag FeatureFlag @relation(fields: [featureFlagId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, featureFlagId])
+}
+
+model UiConfig {
+  id          String   @id @default(uuid())
+  key         String   @unique // e.g., "sidebar_menu", "theme"
+  value       String     // JSON configuration (stored as string for SQLite)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  action    String   // e.g., "USER_CREATED", "ROLE_UPDATED"
+  entity    String   // e.g., "User", "Role"
+  entityId  String?
+  details   String?    // JSON details (stored as string for SQLite)
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+}
