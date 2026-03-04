@@ -5,12 +5,12 @@
   "type": "module",
   "scripts": {
     "dev:frontend": "vite frontend --port 3000 --host 0.0.0.0",
-    "dev:backend": "PORT=3001 tsx watch backend/server.ts",
+    "dev:backend": "PORT=3001 tsx watch /server.ts",
     "dev": "npm run dev:backend & npm run dev:frontend",
     "build:frontend": "vite build frontend",
     "build:backend": "tsc -p backend --noEmit",
-    "build": "npx prisma generate --schema=backend/prisma/schema.prisma && npm run build:frontend",
-    "start": "NODE_ENV=production tsx backend/server.ts",
+    "build": "npx prisma generate --schema=prisma/schema.prisma && npm run build:frontend",
+    "start": "NODE_ENV=production tsx /server.ts",
     "lint": "tsc -p frontend --noEmit && tsc -p backend --noEmit",
     "clean": "rm -rf frontend/dist"
   },
