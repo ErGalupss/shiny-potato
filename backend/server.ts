@@ -10,11 +10,14 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   
   // CORS configuration for development
-  app.enableCors({
-    origin: process.env.NODE_ENV === 'production' ? false : '*',
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    credentials: true,
-  });
+app.enableCors({
+  origin: [
+    'https://eurostadashboard.onrender.com',
+    'http://localhost:5173'
+  ],
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+  credentials: true,
+});
 
   // Global prefix for API
   app.setGlobalPrefix('api');
